@@ -1,0 +1,131 @@
+{
+    "points" : [
+        // Point syntax:
+        // 1) A double - CoordX 
+        // Example:
+        2.0, // Index is 0, (2.0, 0.0, 0.0) in space
+
+        // 2) An array of doubles: 
+        // [CoordX]
+        // [CoordX, CoordY]
+        // [CoordX, CoordY, CoordZ]
+        // Examples:
+        [ 3.0 ], // Index is 1, (3.0, 0.0, 0.0) in space
+        [ 0.0, 5.0 ], // Index is 2, (0.0, 5.0, 0.0) in space
+        [ 10.0, 2.0, 3.0] // Index is 3, (10.0, 2.0, 3.0) in space
+
+    ],
+    "curves" : [
+        // Curve syntax:
+        // [ typeTag, var1, var2, ... (var depends on different curve types) ] 
+        // 1) Line: [ 0, startIndex, endIndex ]
+        // Example:
+        [0, 1, 2], // Index is 0
+
+        // 2) Circle: [1, startIndex, centerIndex, endIndex]
+        // Example:
+        [1, 4, 2, 3] // Index is 1
+        [1, 2, 3, 5] // Index is 2
+
+        // ...
+    ],
+    "curveLoops" : [
+        // Curve loop syntax:
+        // [ indexOfCurve1, indexOfCurve2, indexOfCurve3, ...]
+        // curve index is an integer, negative means the direction is reversed
+        // Examples:
+        [1, 2, 3], // Index is 0
+        [2, -3, 4, 5], // Index is 1
+        [4, 5] // Index is 2
+        // ...
+
+    ],
+    "surfaces" : [
+        // Surface syntax:
+        // [ 
+        //   typeTag(0: Plane Surface, 1: Ruled Surface),
+        //   indexOfCurveLoop1(exterior), 
+        //   indexOfCurveLoop2(a hole), 
+        //   indexOfCurveLoop1(another hole),
+        //   ...
+        // ]
+        // Examples:
+        [0, 1],
+        [0, 2],
+        [0, 3, 4],
+        [1, 5]
+        // ...
+    ],
+    "surfaceLoops" : [
+        // Surface loop syntax:
+        // [indexOfSurface1, indexOfSurface2, indexOfSurface3, ...]
+        // curve index is an integer, negative means the direction is reversed
+        // Examples:
+        [1, 3, 5],
+        [2, -4, 1]
+        // ...
+    ],
+    "volumns" : [
+        // Volumn syntax:
+        // [ 
+        //   typeTag(0: Regular Volumn, 1: ...),
+        //   indexOfSurface1(exterior), 
+        //   indexOfSurface2(a hole), 
+        //   indexOfSurface3(another hole),
+        //   ...
+        // ]
+        // Examples:
+        [0, 1],
+        [0, 2],
+        [0, 3, 5]
+        // ...
+    ],
+    "pointsGroups" : [
+        // Points group syntax:
+        // [indexOfPoint1, indexOfPoint2, indexOfPoint3, ...]
+        [0, 1, 2],
+        [4, 5, 7, 9]
+        // ...
+    ],
+    "curvesGroups" : [
+        // Curves group syntax:
+        // [indexOfCurve1, indexOfCurve2, indexOfCurve3, ...]
+        [0, 1, 2],
+        [5, 7, 6]
+        // ...
+    ],
+    "surfacesGroups" : [
+        // Surfaces group syntax:
+        // [indexOfSurface1, indexOfSurface2, indexOfSurface3, ...]
+        [0, 1, 2],
+        [5, 7, 6]
+        // ...
+    ],
+    "volumnGroups" : [
+        // Volumn group syntax:
+        // [indexOfVolumn1, indexOfVolumn2, indexOfVolumn3, ...]
+        [0, 1, 2],
+        [3, 4, 5, 6]
+        // ...
+    ],        
+    "groups" : [
+        // Group syntax
+        // [
+        //   tag(A unique tag string),
+        //   [ setTypeTag(0: pointsGroups, 1: curvesGroups,
+        //                2:surfacesGroups, 3: volumnGroups, 4: groups),
+        //     indexOfEntity1, indexOfEntity2, ... ],
+        //   [ setTypeTag,
+        //     indexOfAnotherTypeEntity1, indexOfAnotherTypeEntity2, ... ],
+        //   ...
+        // ]
+        // Example:
+        ["theCube", [2, 1]],
+        ["cornersOfTheCube", [0, 3]],
+        ["edgesOfTheCube", [1, 2]],
+        ["frontSurfaceOfTheCube", [2, 2]],
+        ["anotherCube", [2, 2]],
+        ["twoCubeCombo", [4, "theCube", "anotherCube"]]
+        // ...
+    ]
+}
