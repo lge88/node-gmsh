@@ -1,14 +1,14 @@
 {
   "name": "gmsh",
-  "version": "0.0.0",
-  "description": "A Node.js binding for Gmsh.",
+  "version": "0.0.1",
+  "description": "Node.js binding for Gmsh.",
   "main": "index.js",
   "scripts": {
-    "test": "node ./tests/all.js"
+    "test": "node ./tests/basic.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/geli1988/node-gmsh.git"
+    "url": "https://github.com/lge88/node-gmsh.git"
   },
   "keywords": [
     "mesh",
