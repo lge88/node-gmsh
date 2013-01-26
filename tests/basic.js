@@ -1,3 +1,4 @@
+debugger;
 var msh = require('../lib/msh.js');
 
 // t1.geo
@@ -21,7 +22,26 @@ var t1 = [
     'Recombine Surface {6};'
 ].join('\n');
 
-msh.mesh(t1, ['-3', '-format', 'msh'], function(data) {
-    console.log('Data:', data.toString());
+msh.mesh(t1, ['-3', '-format', 'msh'], function(stream, stdout, stderr) {
+    debugger;
+    // console.log('', data.toString());
+    stream.on('open', function() {
+        console.log('Stream opened');
+    });
+    
+    stream.on('data', function(data) {
+        console.log('Data Stream:', data.string());
+    });
+    
+    stream.on('end', function() {
+        console.log('Stream end:');
+    });
+    
+    stream.on('error', function(err) {
+        console.error(err);
+    });
+    
+    console.log('stdout:', stdout.toString());
+    console.log('stderr:', stderr.toString());
 });
 
