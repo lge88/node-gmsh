@@ -15,5 +15,10 @@
     "gmsh"
   ],
   "author": "Li Ge",
-  "license": "BSD"
+  "license": "BSD",
+  "dependencies": {
+    "shortid": "~1.0.9",
+    "fifojs": "0.0.2",
+    "mkdirp": "~0.3.4"
+  }
 }
