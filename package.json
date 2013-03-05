@@ -1,24 +1,17 @@
 {
-  "name": "gmsh",
+  "name": "application-name",
   "version": "0.0.1",
-  "description": "Node.js binding for Gmsh.",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "node ./tests/basic.js"
+    "start": "node app"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lge88/node-gmsh.git"
-  },
-  "keywords": [
-    "mesh",
-    "gmsh"
-  ],
-  "author": "Li Ge",
-  "license": "BSD",
   "dependencies": {
-    "shortid": "~1.0.9",
-    "fifojs": "0.0.2",
-    "mkdirp": "~0.3.4"
+    "express": "3.0.6",
+    "jade": "*",
+    "lodash": "~1.0.1"
+  },
+  "devDependencies": {
+    "express": "~3.0.6",
+    "request": "~2.14.0"
   }
 }
