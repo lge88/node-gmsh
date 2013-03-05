@@ -23,7 +23,7 @@ var t1 = [
 request.post('http://localhost:9999', {
   form : {
     format : 'geo',
-    options : '-3 -format msh',
+    options : '-3 format msh',
     data : t1
   }
 }, function (error, response, body) {

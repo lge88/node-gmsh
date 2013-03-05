@@ -15,22 +15,15 @@ app.configure('development', function(){
 });
 
 app.post('/', function(req, res) {
-  debugger;
   var body = req.body;
-  var m = gmsh(body.data, body.format || 'geo')
-    // Doesn't work for now
-    // .onOutStream('data', function(data) {
-    //   res.write(data);
-    // })
-    .options(body.options || '-3 -format msh')
-    .mesh(function(err, stdout, stderr){
+  var m = gmsh(body.data)
+    .options(body.options)
+    .mesh(function(err, data, stdout, stderr){
       if (err) {
-        debugger;
         console.error(err);
         res.json(400, err);
       } else {
-        // res.status(200).set('Content-Type', 'text/plain').end(m._mshCache);
-        res.send(m._mshCache);
+        res.send(200, data);
       }
     });
 });

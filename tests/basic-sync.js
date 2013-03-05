@@ -21,25 +21,16 @@ var t1 = [
   'Recombine Surface {6};'
 ].join('\n');
 
-// var t1 = fs.readFileSync(__dirname + '/t1.geo', 'utf8');
-
 var m = gmsh(t1, 'geo')
-  .onOutStream('data', function(data) {
-    // console.log('Data Stream:', data.toString());
-    console.log(data.toString());
-  })
-  // .dimension(3)
-  // .outputFormat('msh')
   .options(['-3', '-format', 'msh'])
-  // .options('-3 -format msh')
-  .mesh(function(err, stdout, stderr){
+  .mesh(function(err, data, stdout, stderr){
     if (err) {
       console.error(err);
       return;
     } else {
+      console.log('msh:', m.msh);
       console.log('stdout:\n', stdout);
       console.log('stderr:\n', stderr);
-      console.log('msh cache', m._mshCache);
     }
   });
 

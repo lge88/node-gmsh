@@ -2,21 +2,17 @@ var fs = require('fs');
 var path = require('path');
 var mkdirp = require('mkdirp');
 var shortId = require('shortid');
-var fifojs = require('fifojs');
+// var fifojs = require('fifojs');
+
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var _ = require('lodash');
 
 mkdirp(__dirname + '/tmp');
-// var inFifo = __dirname + '/tmp/in.' + shortId.generate() + '.fifo';
-// var outFifo = __dirname + '/tmp/out.' + shortId.generate() + '.fifo';
-// fifojs.mkfifo(inFifo, 0777);
-// fifojs.mkfifo(outFifo, 0777);
 
 process.on('exit', function() {
   console.log('clean up');
   exec('rm -rf ' + __dirname + '/tmp/*');
-  // fs.unlink(outFifo);
 });
 
 process.on('SIGINT', function () {
@@ -31,121 +27,59 @@ process.stderr.on('data', function() {
   console.log('stderr:', data);
 });
 
-
 var gmsh = function(source, format) {
   if (!(this instanceof gmsh)) {
     return new gmsh(source, format);
   }
 
-  var inFifo = __dirname + '/tmp/in.' + shortId.generate() + '.fifo';
-  var outFifo = __dirname + '/tmp/out.' + shortId.generate() + '.fifo';
-  fifojs.mkfifo(inFifo, 0777);
-  fifojs.mkfifo(outFifo, 0777);
-  
-  var _this = this;
-  this._in = inFifo;
-  this._in = fs.createWriteStream(inFifo);
+  format || (format = 'geo');
+  this.inFile = __dirname + '/tmp/in.' + shortId.generate() + '.' + format;
+  this.outFile = __dirname + '/tmp/out.' + shortId.generate();
 
-  this._in.on('open', function() {
-    if (_this._pipe) {
-      _this._source.pipe(_this._in);
-      _this._in.destroySoon();
-    } else {
-      // FIXME: Without this line it won't work. Don't know why
-      _this._in.write('\n');
-      _this._in.write(_this._source);
-      _this._in.end();
-      _this._in.destroySoon();
-    }
-  });
+  fs.writeFileSync(this.inFile, source);
 
-  this._in.on('error', function(err) {
-    console.log("gmsh in err", err);
-  });
-  
-  if (typeof source === 'string') {
-    if (!format) {
-      this._pipe = true;
-      this._source =fs.createReadStream(source);
-    } else {
-      this._pipe = false;
-      if (format === 'geo') {
-        this._source = source;
-      }
-    }
-  } else if (source instanceof fs.ReadStream){
-    this._pipe = true;
-    this._source = source;
-  }
-  
-  this._out = fs.createReadStream(outFifo);
-  this._out.on('end', function() {
-    console.log('gmsh out end');
-    _this._out.destroy();
-  });
-  
-  this._options = {};
-  this._cmdOptions = '';
-  this.geo = {};
-  this._mshCache = '';
+  this.cmdOptions = '';
+  this.msh = '';
   return this;
 };
 
 gmsh.prototype.options = function(opt) {
   if (typeof opt === 'string') {
-    this._cmdOptions += opt;
+    this.cmdOptions += opt;
   } else if (Array.isArray(opt)){
-    this._cmdOptions += opt.join(' ');
-  } else if (typeof opt === 'object') {
-    _.merge(this._options, opt);
+    this.cmdOptions += opt.join(' ');
   }
   return this;
 };
 
-gmsh.prototype.onOutStream = function(name, cb) {
-  this._out.on(name, cb);
-  return this;
-};
-
-gmsh.prototype.onData = function(cb) {
-  this._out.on('data', cb);
-  return this;
-};
-
-gmsh.prototype.writeOptionsToString = function() {
-  
-};
-
-gmsh.prototype.mesh = function(cb1, cb2) {
+gmsh.prototype.mesh = function(cb) {
   var cmd = ['gmsh']
-    .concat(this._cmdOptions)
+    .concat(this.cmdOptions || '-3 -format msh')
     .concat([
-      path.resolve(this._in.path),
+      path.resolve(this.inFile),
       '-o',
-      path.resolve(this._out.path)
+      path.resolve(this.outFile)
     ]).join(' ');
 
   var _this = this;
-
-  var wrap = function(fn) {
-    return function() {
-      fn.apply(this, arguments);
-      _this._out.destroy();
-    };
-  };
-  
-  this._out.on('data', function(data) {
-    _this._mshCache += data.toString();
+  exec(cmd, function(err, stdout, stderr) {
+    if (err) {
+      fs.unlink(_this.inFile);
+      return cb(err);
+    }
+    
+    return fs.readFile(_this.outFile, 'utf8', function(e, data) {
+      if (e) {
+        fs.unlink(_this.outFile);
+        return cb(e);
+      } else {
+        fs.unlink(_this.inFile);
+        fs.unlink(_this.outFile);
+        _this.msh = data;
+        return cb(null, data, stdout, stderr);
+      }
+    });
   });
-  
-  if (arguments.length >= 2 && _.isFunction(cb2)) {
-    this._out.on('data', cb1);
-    exec(cmd, wrap(cb2));
-    // exec(cmd, cb2);
-  } else {
-    exec(cmd, wrap(cb1));
-    // exec(cmd, cb1);
-  }
 
   return this;
 };
