@@ -27,14 +27,14 @@ var t1 = [
 
 var m = gmsh(t1, 'geo')
   .options(['-3', '-format', 'msh'])
-  .mesh(function(err, data, stdout, stderr){
-    if (err) {
-      console.error(err);
-      return;
-    } else {
-      console.log('msh:', m.msh);
-      console.log('stdout:\n', stdout);
-      console.log('stderr:\n', stderr);
-    }
-  });
-
+  .mesh()
+  .then(function(data) {
+    console.log('msh:', data);
+  })
+  .progress(function(msg) {
+    console.log('' + msg.data);
+  })
+  .fail(function(err) {
+    console.error(err);
+  })
+  .done();
