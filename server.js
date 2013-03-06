@@ -22,10 +22,14 @@ app.post('/', function(req, res) {
     .then(function(data) {
       res.send(200, data);
     })
+    .progress(function(msg) {
+      console.log('' + msg.data);
+    })
     .fail(function(err) {
       console.error(err);
       res.json(400, err);
-    });
+    })
+    .done();
 });
 
 http.createServer(app).listen(app.get('port'), function(){
