@@ -16,15 +16,15 @@ app.configure('development', function(){
 
 app.post('/', function(req, res) {
   var body = req.body;
-  var m = gmsh(body.data)
+  gmsh(body.data)
     .options(body.options)
-    .mesh(function(err, data, stdout, stderr){
-      if (err) {
-        console.error(err);
-        res.json(400, err);
-      } else {
-        res.send(200, data);
-      }
+    .mesh()
+    .then(function(data) {
+      res.send(200, data);
+    })
+    .fail(function(err) {
+      console.error(err);
+      res.json(400, err);
     });
 });
 

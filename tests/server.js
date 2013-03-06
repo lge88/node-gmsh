@@ -1,7 +1,7 @@
 var request = require('request');
 
 var t1 = [
-  'lc = 1e-1;',
+  'lc = 5e-3;',
   'Point(1) = {0, 0, 0, lc};',
   'Point(2) = {.1, 0,  0, lc} ;',
   'Point(3) = {.1, .3, 0, lc} ;',
@@ -23,7 +23,7 @@ var t1 = [
 request.post('http://localhost:9999', {
   form : {
     format : 'geo',
-    options : '-3 format msh',
+    options : '-3 -format msh',
     data : t1
   }
 }, function (error, response, body) {
@@ -38,3 +38,25 @@ request.post('http://localhost:9999', {
     console.log('error:', body);
   }
 });
+
+setTimeout(function() {
+  console.log('Test error handling...');
+  request.post('http://localhost:9999', {
+    form : {
+      format : 'geo',
+      options : '-3 format msh',
+      data : t1
+    }
+  }, function (error, response, body) {
+    if (error) {
+      console.error(error);
+      return;
+    }
+    
+    if (response.statusCode == 200) {
+      console.log('response:', body);
+    } else {
+      console.log('error:', body);
+    }
+  });
+}, 2000);

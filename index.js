@@ -2,13 +2,14 @@ var fs = require('fs');
 var path = require('path');
 var mkdirp = require('mkdirp');
 var shortId = require('shortid');
+var Q = require('q');
 // var fifojs = require('fifojs');
 
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var _ = require('lodash');
 
-mkdirp(__dirname + '/tmp');
+// mkdirp(__dirname + '/tmp');
 
 process.on('exit', function() {
   console.log('clean up');
@@ -19,13 +20,13 @@ process.on('SIGINT', function () {
   process.exit();
 });
 
-process.stdout.on('data', function() {
-  console.log('stdout:', data);
-});
+// process.stdout.on('data', function() {
+//   console.log('stdout:', data);
+// });
 
-process.stderr.on('data', function() {
-  console.log('stderr:', data);
-});
+// process.stderr.on('data', function() {
+//   console.log('stderr:', data);
+// });
 
 var gmsh = function(source, format) {
   if (!(this instanceof gmsh)) {
@@ -33,55 +34,69 @@ var gmsh = function(source, format) {
   }
 
   format || (format = 'geo');
-  this.inFile = __dirname + '/tmp/in.' + shortId.generate() + '.' + format;
-  this.outFile = __dirname + '/tmp/out.' + shortId.generate();
+  this.inFile = '/tmp/gmsh.in.' + shortId.generate() + '.' + format;
+  this.outFile = '/tmp/gmsh.out.' + shortId.generate();
 
   fs.writeFileSync(this.inFile, source);
 
-  this.cmdOptions = '';
+  this.cmdOptions = [];
   this.msh = '';
   return this;
 };
 
 gmsh.prototype.options = function(opt) {
   if (typeof opt === 'string') {
-    this.cmdOptions += opt;
+    opt = opt.trim().replace(/\s+/, ' ').split(' ');
   } else if (Array.isArray(opt)){
-    this.cmdOptions += opt.join(' ');
+
+  } else {
+    return this.cmdOptions;
   }
+  this.cmdOptions = this.cmdOptions.concat(opt);
   return this;
 };
 
-gmsh.prototype.mesh = function(cb) {
-  var cmd = ['gmsh']
-    .concat(this.cmdOptions || '-3 -format msh')
-    .concat([
+gmsh.prototype.mesh = function() {
+  var deferred = Q.defer();
+  var cmd = 'gmsh';
+  var args = this.options();
+  args = _.isEmpty(args) ? ['-3', '-format', 'msh'] : args;
+  
+  var _this = this;
+  var child = spawn(cmd, args.concat([
       path.resolve(this.inFile),
       '-o',
       path.resolve(this.outFile)
-    ]).join(' ');
+    ]));
 
-  var _this = this;
-  exec(cmd, function(err, stdout, stderr) {
-    if (err) {
-      fs.unlink(_this.inFile);
-      return cb(err);
-    }
-    
-    return fs.readFile(_this.outFile, 'utf8', function(e, data) {
+  child.on('exit', function() {
+    fs.readFile(_this.outFile, 'utf8', function(e, data) {
       if (e) {
         fs.unlink(_this.outFile);
-        return cb(e);
+        deferred.reject(e);
       } else {
         fs.unlink(_this.inFile);
         fs.unlink(_this.outFile);
-        _this.msh = data;
-        return cb(null, data, stdout, stderr);
+        deferred.resolve(data);
       }
     });
   });
+  
+  child.stdout.on('data', function(d) {
+    deferred.notify({
+      type : 'stdout',
+      data : d
+    });
+  });
+  
+  child.stderr.on('data', function(d) {
+    deferred.notify({
+      type : 'stderr',
+      data : d
+    });
+  });
 
-  return this;
+  return deferred.promise;
 };
 
 gmsh.prototype.exec = gmsh.prototype.run = gmsh.prototype.mesh;
