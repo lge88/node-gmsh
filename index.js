@@ -69,7 +69,7 @@ gmsh.prototype.mesh = function() {
       path.resolve(this.outFile)
     ]));
 
-  child.on('exit', function() {
+  function getMeshData() {
     fs.readFile(_this.outFile, 'utf8', function(e, data) {
       if (e) {
         fs.unlink(_this.outFile);
@@ -80,7 +80,10 @@ gmsh.prototype.mesh = function() {
         deferred.resolve(data);
       }
     });
-  });
+  }
+  
+  child.on('exit', getMeshData);
+  child.stdout.on('end', getMeshData);
   
   child.stdout.on('data', function(d) {
     deferred.notify({
