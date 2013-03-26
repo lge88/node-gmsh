@@ -5,7 +5,7 @@ var shortId = require('shortid');
 var fifojs = require('fifojs');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
-var _ = require('lodash');
+var _ = require('underscore');
 
 mkdirp(__dirname + '/tmp');
 var inFifo = __dirname + '/tmp/in.' + shortId.generate() + '.fifo';

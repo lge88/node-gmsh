@@ -19,6 +19,7 @@
   "dependencies": {
     "shortid": "~1.0.9",
     "fifojs": "0.0.2",
-    "mkdirp": "~0.3.4"
+    "mkdirp": "~0.3.4",
+    "underscore": "~1.4.4"
   }
 }
